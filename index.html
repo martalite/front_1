@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>ExtJS CRUD - Tutorial de REST API</title>
+
+    <!-- ExtJS CSS desde cdnjs (público y accesible) -->
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/extjs/6.2.0/classic/theme-triton/resources/theme-triton-all.css">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .app-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .app-header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .app-header p {
+            margin: 5px 0 0 0;
+            opacity: 0.9;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-header">
+        <h1>🎓 Tutorial ExtJS - CRUD con REST API</h1>
+        <p>Aprende a hacer llamadas a servicios REST con ExtJS</p>
+    </div>
+
+    <!-- El contenedor de la aplicación se creará aquí -->
+    <div id="app-container"></div>
+
+    <!-- Scripts al final del body para asegurar carga correcta -->
+    <!-- 1. Primero ExtJS desde cdnjs (público y sin restricciones) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/extjs/6.2.0/ext-all.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/extjs/6.2.0/classic/theme-triton/theme-triton.js"></script>
+
+    <!-- 2. Luego nuestra aplicación -->
+    <script src="app/model/User.js"></script>
+    <script src="app/store/Users.js"></script>
+    <script src="app/view/UserGrid.js"></script>
+    <script src="app/view/UserForm.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
