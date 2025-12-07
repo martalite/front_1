@@ -16,7 +16,7 @@ Ext.Loader.setConfig({
 });
 
 // Esperar a que el DOM esté listo
-Ext.onReady(function () {
+/**Ext.onReady(function () {
 
     console.log('%c📚 TUTORIAL EXTJS - CRUD CON REST API', 'font-size: 16px; color: #667eea; font-weight: bold;');
     console.log('%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: #667eea;');
@@ -37,10 +37,13 @@ Ext.onReady(function () {
         layout: 'fit',
 
         // Renderizar en nuestro contenedor personalizado
-        renderTo: 'app-container',
+         renderTo: Ext.getBody(),
+         width: 900,  // <---- añade esto
+         height: 450,
 
+               
         // Padding para separar del borde
-        padding: 0,
+        padding: 10,
 
         // Items: aquí va nuestro grid principal
         items: [
@@ -95,8 +98,29 @@ Ext.onReady(function () {
                 }, 500);
             }
         }
-    });
+    
 });
+
+            Ext.application({
+                name: 'FRONT_1',
+
+                requires: [
+                    'FRONT_1.view.UsersGrid'
+           ],
+
+           launch: function () {
+              Ext.create({
+                xtype: 'usersgrid',
+                renderTo: Ext.getBody(),
+                width: '80%',
+                height: 450,
+                padding: 10
+        });
+    }
+});
+
+
+
 
 /**
  * ═══════════════════════════════════════════════════════════════

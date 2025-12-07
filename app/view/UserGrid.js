@@ -9,41 +9,63 @@
  * - Cómo implementar las operaciones CRUD
  */
 
-Ext.define('Tutorial.view.UserGrid', {
+Ext.define('FRONT_1.view.UsersGrid', {
     extend: 'Ext.grid.Panel',
+    xtype: 'usersgrid',
 
-    alias: 'widget.usergrid',
+    title: '👥 Gestión de Usuarios',
 
-    // Título del panel
-    title: '👥 Gestión de Usuarios - CRUD Completo',
-
-    // Configuración del grid
     frame: true,
 
-    // Asociar el store
+    expanderFirst: false,
+    expanderPosition: 1,
+
     store: {
-        type: 'users'
+        type: 'usersstore'
     },
 
-    // Columnas del grid
+    plugins: [{
+        ptype: 'rowBodyTpl',
+        rowBodyTpl: [
+            '<div style="padding:8px;">',
+                '<p><b>Nombres:</b> {nombres}</p>',
+            '</div>'
+        ]
+    }],
+
+     
+        
+    
     columns: [
+
+        
+         // Número de fila e indicador visual para expansión
+        {
+            text: '',
+            width: 30,
+            renderer: function () {
+                return '<span class="expander-btn" style="cursor:pointer;font-size:14px;font-weight:bold;">▶</span>';
+            }    
+        },
+
+        {
+            xtype: 'rownumberer',
+            width: 30
+        },
+
         {
             text: 'ID',
             dataIndex: 'id',
             width: 60,
             align: 'center',
-            // Renderizador personalizado para dar estilo
             renderer: function (value) {
-                return '<span style="font-weight: bold; color: #667eea;">#' + value + '</span>';
+                return '<b>#' + value + '</b>';
             }
         },
         {
-            text: 'Nombre',
-            dataIndex: 'nombre',
+            text: 'Nombres',
+            dataIndex: 'nombres',
             flex: 1,
-            // Ordenable
-            sortable: true,
-            // Renderizador con icono
             renderer: function (value) {
                 return '<i class="fa fa-user"></i> ' + value;
             }
@@ -52,8 +74,6 @@ Ext.define('Tutorial.view.UserGrid', {
             text: 'Email',
             dataIndex: 'email',
             flex: 1,
-            sortable: true,
-            // Renderizador con icono
             renderer: function (value) {
                 return '<i class="fa fa-envelope"></i> ' + value;
             }
@@ -63,16 +83,14 @@ Ext.define('Tutorial.view.UserGrid', {
             dataIndex: 'edad',
             width: 80,
             align: 'center',
-            sortable: true,
-            // Renderizador con icono
             renderer: function (value) {
-                return '<i class="fa fa-birthday-cake"></i> ' + value;
+                return value + ' años';
             }
         },
         {
             text: 'Acciones',
             xtype: 'actioncolumn',
-            width: 100,
+            width: 120,
             align: 'center',
             items: [
                 {
@@ -84,7 +102,6 @@ Ext.define('Tutorial.view.UserGrid', {
                     iconCls: 'fa fa-trash',
                     tooltip: 'Eliminar usuario',
                     handler: 'onDeleteUser',
-                    // Estilo para el icono de eliminar
                     getClass: function () {
                         return 'fa fa-trash delete-icon';
                     }
@@ -93,24 +110,21 @@ Ext.define('Tutorial.view.UserGrid', {
         }
     ],
 
-    // Barra de herramientas superior
     tbar: [
         {
             text: 'Nuevo Usuario',
             iconCls: 'fa fa-plus',
             handler: 'onNewUser',
-            // Estilo del botón
-            ui: 'default',
             scale: 'medium'
         },
-        '-', // Separador
+        '-',
         {
             text: 'Recargar',
             iconCls: 'fa fa-refresh',
             handler: 'onReload',
             scale: 'medium'
         },
-        '->',  // Empuja los siguientes items a la derecha
+        '->',
         {
             xtype: 'textfield',
             reference: 'searchField',
@@ -123,7 +137,6 @@ Ext.define('Tutorial.view.UserGrid', {
         }
     ],
 
-    // Barra de paginación inferior
     bbar: {
         xtype: 'pagingtoolbar',
         displayInfo: true,
@@ -131,155 +144,52 @@ Ext.define('Tutorial.view.UserGrid', {
         emptyMsg: 'No hay usuarios para mostrar'
     },
 
-    // Listeners
     listeners: {
-        // Se ejecuta cuando se hace doble clic en una fila
-        itemdblclick: 'onEditUser'
+
+    cellclick: function (grid, td, cellIndex, record, tr, rowIndex, e) {
+        // Si hicieron clic en la primera columna (flecha)
+        if (cellIndex === 0) {
+            e.stopEvent(); 
+            grid.findPlugin('rowexpander').toggleRow(record);
+        }
     },
 
-    // Controller con los métodos de acción
+    itemdblclick: 'onEditUser' // solo doble clic edita
+},
+
+
     controller: {
 
-        /**
-         * CREAR - Abrir formulario para nuevo usuario
-         */
         onNewUser: function () {
-            console.log('➕ Abriendo formulario para nuevo usuario');
-
-            var form = Ext.create('Tutorial.view.UserForm', {
-                isEdit: false
-            });
-
-            // Escuchar el evento de guardado
-            form.on('usersaved', this.onReload, this);
-
-            form.show();
+            console.log('➕ Crear nuevo usuario');
         },
 
-        /**
-         * ACTUALIZAR - Abrir formulario para editar usuario
-         */
         onEditUser: function (grid, record) {
             console.log('📝 Editando usuario:', record.data);
-
-            var form = Ext.create('Tutorial.view.UserForm', {
-                isEdit: true,
-                record: record
-            });
-
-            // Escuchar el evento de guardado
-            form.on('usersaved', this.onReload, this);
-
-            form.show();
         },
 
-        /**
-         * ELIMINAR - Método DELETE
-         * Elimina un usuario del servidor
-         */
         onDeleteUser: function (grid, rowIndex, colIndex, item, e, record) {
-            var me = this;
-
-            console.log('🗑️ Solicitando eliminar usuario:', record.data);
-
-            // Confirmar eliminación
-            Ext.Msg.confirm(
-                'Confirmar eliminación',
-                '¿Está seguro que desea eliminar a <b>' + record.get('nombre') + '</b>?',
-                function (button) {
-                    if (button === 'yes') {
-                        me.deleteUser(record);
-                    }
-                }
-            );
+            console.log('🗑 Eliminando usuario:', record.data);
         },
 
-        /**
-         * Ejecuta la petición DELETE
-         */
-        deleteUser: function (record) {
-            var me = this,
-                grid = me.getView(),
-                id = record.get('id');
-
-            console.log('📤 DELETE - Eliminando usuario ID:', id);
-
-            // Mostrar loading
-            grid.setLoading('Eliminando...');
-
-            // Hacer la petición DELETE
-            Ext.Ajax.request({
-                url: 'http://localhost:8080/api/users/' + id,
-                method: 'DELETE',
-                success: function (response) {
-                    console.log('✅ Usuario eliminado exitosamente');
-
-                    grid.setLoading(false);
-                    Ext.Msg.alert('Éxito', 'Usuario eliminado correctamente');
-
-                    // Recargar el grid
-                    me.onReload();
-                },
-                failure: function (response) {
-                    console.error('❌ Error al eliminar usuario:', response);
-                    grid.setLoading(false);
-                    Ext.Msg.alert('Error', 'No se pudo eliminar el usuario: ' + response.statusText);
-                }
-            });
-        },
-
-        /**
-         * LEER - Método GET
-         * Recarga los datos del servidor
-         */
         onReload: function () {
-            var grid = this.getView(),
-                store = grid.getStore();
-
-            console.log('📥 GET - Recargando datos desde el servidor');
-
-            // Limpiar filtros de búsqueda
-            store.clearFilter();
-
-            // Recargar el store (hace una petición GET)
-            store.load({
-                callback: function (records, operation, success) {
-                    if (success) {
-                        console.log('✅ Datos recargados correctamente:', records.length, 'registros');
-                    } else {
-                        console.error('❌ Error al recargar datos');
-                    }
-                }
-            });
+            var grid = this.getView();
+            grid.getStore().reload();
         },
 
-        /**
-         * BUSCAR - Filtrado local
-         * Filtra los datos que ya están en el grid
-         */
         onSearch: function (field) {
             var grid = this.getView(),
                 store = grid.getStore(),
                 searchValue = field.getValue();
 
-            console.log('🔍 Buscando:', searchValue);
-
-            // Limpiar filtros anteriores
             store.clearFilter();
 
             if (searchValue) {
-                // Filtrar por nombre o email
-                store.filter([
-                    {
-                        filterFn: function (record) {
-                            var nombre = record.get('nombre').toLowerCase(),
-                                email = record.get('email').toLowerCase(),
-                                search = searchValue.toLowerCase();
-
-                            return nombre.indexOf(search) > -1 || email.indexOf(search) > -1;
-                        }
-                    }
-                ]);
+                searchValue = searchValue.toLowerCase();
+                store.filterBy(function (record) {
+                    return record.get('nombres').toLowerCase().includes(searchValue) ||
+                           record.get('email').toLowerCase().includes(searchValue);
+                });
             }
         }
     }

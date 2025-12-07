@@ -9,41 +9,28 @@
  * - Cómo configurar el identificador único (idProperty)
  */
 
-Ext.define('Tutorial.model.User', {
+Ext.define('FRONT_1.model.User', {
     extend: 'Ext.data.Model',
-    
-    // El campo que sirve como identificador único
-    idProperty: 'id',
-    
-    // Definición de los campos del modelo
+
     fields: [
-        {
-            name: 'id',
-            type: 'int',
-            // El ID no se puede editar, lo genera el servidor
-            persist: false
-        },
-        {
-            name: 'nombre',
-            type: 'string',
-            // Campo obligatorio
-            allowNull: false
-        },
-        {
-            name: 'email',
-            type: 'string',
-            allowNull: false
-        },
-        {
-            name: 'edad',
-            type: 'int',
-            allowNull: false
-        }
+        'id',
+        'nombres',
+        'apellidos',
+        'edad',
+        'sexo',
+        'direccion',
+        'ciudad',
+        'pais',
+        'cargo',
+        'nivelEstudios',
+        'email'
     ],
+
+
     
     // Validaciones (opcional pero recomendado)
     validators: {
-        nombre: { type: 'presence', message: 'El nombre es obligatorio' },
+        nombres: { type: 'presence', message: 'El nombre es obligatorio' },
         email: [
             { type: 'presence', message: 'El email es obligatorio' },
             { type: 'email', message: 'Email inválido' }

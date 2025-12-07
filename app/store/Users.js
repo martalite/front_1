@@ -10,22 +10,23 @@
  * - Cómo funciona la carga automática de datos
  */
 
-Ext.define('Tutorial.store.Users', {
+Ext.define('FRONT_1.store.UsersStore', {
     extend: 'Ext.data.Store',
 
+
     // Alias para referenciar este store fácilmente
-    alias: 'store.users',
+   alias: 'store.usersstore',
 
     // Asociamos el modelo User
-    model: 'Tutorial.model.User',
+    model: 'FRONT_1.model.User',
 
-    // Número de registros por página (para paginación)
+        // Número de registros por página (para paginación)
     pageSize: 25,
 
     // Configuración del proxy REST
     proxy: {
         // Tipo REST: hace llamadas HTTP automáticamente
-        type: 'rest',
+        type: 'ajax',
 
         // URL base de la API
         url: 'http://localhost:8080/api/users',
