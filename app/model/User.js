@@ -12,23 +12,22 @@
 Ext.define('FRONT_1.model.User', {
     extend: 'Ext.data.Model',
 
+    idProperty: 'id',  // 
+
     fields: [
-        'id',
-        'nombres',
-        'apellidos',
-        'edad',
-        'sexo',
-        'direccion',
-        'ciudad',
-        'pais',
-        'cargo',
-        'nivelEstudios',
-        'email'
+        { name: 'id', type: 'int' },
+        { name: 'nombres', type: 'string' },
+        { name: 'apellidos', type: 'string' },
+        { name: 'edad', type: 'int' },
+        { name: 'sexo', type: 'string' },
+        { name: 'direccion', type: 'string' },
+        { name: 'ciudad', type: 'string' },
+        { name: 'pais', type: 'string' },
+        { name: 'cargo', type: 'string' },
+        { name: 'nivelEstudios', type: 'string' },
+        { name: 'email', type: 'string' }
     ],
 
-
-    
-    // Validaciones (opcional pero recomendado)
     validators: {
         nombres: { type: 'presence', message: 'El nombre es obligatorio' },
         email: [
@@ -41,3 +40,4 @@ Ext.define('FRONT_1.model.User', {
         ]
     }
 });
+
