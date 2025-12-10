@@ -1,10 +1,15 @@
+/**
+ * FORMULARIO DE USUARIO
+ * Crear / Editar usuarios con validaciones
+ */
+
 Ext.define('FRONT_1.view.UserForm', {
     extend: 'Ext.window.Window',
     alias: 'widget.userform',
 
     title: 'Usuario',
     modal: true,
-    width: 400,
+    width: 500,
     layout: 'fit',
 
     isEdit: false,
@@ -12,9 +17,6 @@ Ext.define('FRONT_1.view.UserForm', {
 
     initComponent: function () {
         var me = this;
-
-        if (me.isEdit) me.title = 'Editar Usuario';
-        else me.title = 'Nuevo Usuario';
 
         me.items = [{
             xtype: 'form',
@@ -34,7 +36,8 @@ Ext.define('FRONT_1.view.UserForm', {
                     name: 'id',
                     hidden: !me.isEdit
                 },
-                { fieldLabel: 'Nombre', name: 'nombre' },
+                { fieldLabel: 'Nombres', name: 'nombres' },
+                { fieldLabel: 'Apellidos', name: 'apellidos' },
                 { fieldLabel: 'Email', name: 'email', vtype: 'email' },
                 {
                     fieldLabel: 'Edad',
@@ -42,15 +45,39 @@ Ext.define('FRONT_1.view.UserForm', {
                     xtype: 'numberfield',
                     minValue: 1,
                     maxValue: 120
+                },
+                { fieldLabel: 'Sexo', name: 'sexo', allowBlank: true },
+                { fieldLabel: 'Dirección', name: 'direccion', allowBlank: true },
+                { fieldLabel: 'Ciudad', name: 'ciudad', allowBlank: true },
+                { fieldLabel: 'País', name: 'pais', allowBlank: true },
+
+                // 🔥 COMBO DE ROL OBLIGATORIO
+                {
+                    xtype: 'combo',
+                    fieldLabel: 'Rol *',
+                    name: 'rolId',
+                    displayField: 'nombre',
+                    valueField: 'id',
+                    queryMode: 'local',
+                    forceSelection: true,
+                    allowBlank: false,
+                    blankText: 'Debe seleccionar un rol',
+                    store: {
+                        type: 'store',
+                        fields: ['id', 'nombre'],
+                        autoLoad: true,
+                        proxy: {
+                            type: 'ajax',
+                            url: 'http://localhost:8080/api/perfiles',
+                            reader: { type: 'json' }
+                        }
+                    }
                 }
             ]
         }];
 
         me.buttons = [
-            {
-                text: 'Cancelar',
-                handler: () => me.close()
-            },
+            { text: 'Cancelar', handler: () => me.close() },
             {
                 text: 'Guardar',
                 formBind: true,
@@ -65,28 +92,24 @@ Ext.define('FRONT_1.view.UserForm', {
         }
     },
 
-    // =======================================================
-    // 🔹 GUARDAR USUARIO
-    // =======================================================
     saveUser: function () {
         var me = this,
             form = me.down('form').getForm();
 
         if (!form.isValid()) {
-            Ext.Msg.alert('Validación', 'Complete los campos obligatorios.');
+            Ext.Msg.alert('Error', 'Complete todos los campos obligatorios');
             return;
         }
 
         var values = form.getValues();
+        values.rolNombre = me.down('combo[name=rolId]').getRawValue(); // guardamos el nombre del rol
+
         me.setLoading(true);
 
         if (me.isEdit) me.updateUser(values);
         else me.createUser(values);
     },
 
-    // =======================================================
-    // 🔹 CREAR (POST)
-    // =======================================================
     createUser: function (values) {
         var me = this;
 
@@ -97,27 +120,23 @@ Ext.define('FRONT_1.view.UserForm', {
 
             success: () => {
                 me.setLoading(false);
-                Ext.Msg.alert('Éxito', 'Usuario creado.', () => {
+                Ext.Msg.alert('Éxito', 'Usuario creado', () => {
                     me.fireEvent('usersaved');
                     me.close();
                 });
             },
-
-            failure: (response) => {
+            failure: () => {
                 me.setLoading(false);
-                Ext.Msg.alert('Error', 'No se pudo crear: ' + response.statusText);
+                Ext.Msg.alert('Error', 'No se pudo crear');
             }
         });
     },
 
-    // =======================================================
-    // 🔹 ACTUALIZAR (PUT)
-    // =======================================================
     updateUser: function (values) {
         var me = this,
             id = me.record.get('id');
 
-        values.id = id; // obligatorio
+        values.id = id;
 
         Ext.Ajax.request({
             url: 'http://localhost:8080/api/users/' + id,
@@ -126,15 +145,14 @@ Ext.define('FRONT_1.view.UserForm', {
 
             success: () => {
                 me.setLoading(false);
-                Ext.Msg.alert('Éxito', 'Usuario actualizado.', () => {
+                Ext.Msg.alert('Éxito', 'Usuario actualizado', () => {
                     me.fireEvent('usersaved');
                     me.close();
                 });
             },
-
-            failure: (response) => {
+            failure: () => {
                 me.setLoading(false);
-                Ext.Msg.alert('Error', 'No se pudo actualizar: ' + response.statusText);
+                Ext.Msg.alert('Error', 'No se pudo actualizar');
             }
         });
     }

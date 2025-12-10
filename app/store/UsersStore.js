@@ -16,24 +16,24 @@ Ext.define('FRONT_1.store.UsersStore', {
 
     model: 'FRONT_1.model.User',
 
-    pageSize: 25,
-
     proxy: {
-        type: 'rest',       
+        type: 'rest',
+
         url: 'http://localhost:8080/api/users',
 
-        appendId: true,     
+        // 🚫 IMPORTANTE: DESACTIVAR appendId
+        appendId: false,
 
         api: {
-            read: 'http://localhost:8080/api/users/search',
-            create: 'http://localhost:8080/api/users'
-            
+            read: 'http://localhost:8080/api/users',
+            create: 'http://localhost:8080/api/users',
+            update: 'http://localhost:8080/api/users',
+            destroy: 'http://localhost:8080/api/users'
         },
 
         reader: {
             type: 'json',
-            rootProperty: null,    
-            totalProperty: 'total'
+            rootProperty: null
         },
 
         writer: {
@@ -41,19 +41,13 @@ Ext.define('FRONT_1.store.UsersStore', {
             writeAllFields: true
         },
 
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-        },
-
         listeners: {
             exception: function (proxy, response) {
-                console.error('❌ Error en la petición REST:', response);
+                console.error("❌ Error REST:", response);
                 Ext.Msg.alert('Error', 'Error de servidor: ' + response.status);
             }
         }
     },
 
-    autoLoad: true,
-    autoSync: false
+    autoLoad: true
 });
