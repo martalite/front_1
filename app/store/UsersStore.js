@@ -10,44 +10,22 @@
  * - Cómo funciona la carga automática de datos
  */
 
-Ext.define('FRONT_1.store.UsersStore', {
+Ext.define('App.store.UsersStore', {
     extend: 'Ext.data.Store',
-    alias: 'store.usersstore',
+    alias: 'store.users',
+    storeId: 'usersStoreId', 
 
-    model: 'FRONT_1.model.User',
+    fields: [
+        'id', 'nombre', 'apellido', 'email', 'edad',
+        'perfilId', 'centrosIds'
+    ],
 
     proxy: {
-        type: 'rest',
-
+        type: 'ajax',
         url: 'http://localhost:8080/api/users',
-
-        // 🚫 IMPORTANTE: DESACTIVAR appendId
-        appendId: false,
-
-        api: {
-            read: 'http://localhost:8080/api/users',
-            create: 'http://localhost:8080/api/users',
-            update: 'http://localhost:8080/api/users',
-            destroy: 'http://localhost:8080/api/users'
-        },
-
-        reader: {
-            type: 'json',
-            rootProperty: null
-        },
-
-        writer: {
-            type: 'json',
-            writeAllFields: true
-        },
-
-        listeners: {
-            exception: function (proxy, response) {
-                console.error("❌ Error REST:", response);
-                Ext.Msg.alert('Error', 'Error de servidor: ' + response.status);
-            }
-        }
+        reader: { type: 'json' }
     },
 
     autoLoad: true
 });
+

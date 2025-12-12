@@ -1,96 +1,121 @@
-Ext.define('FRONT_1.view.UsersGrid', {
+Ext.define('App.view.UsersGrid', {
     extend: 'Ext.grid.Panel',
     xtype: 'usersgrid',
 
+    requires: [
+        'App.view.UserForm',
+        'App.view.centros.CentrosWindow'  
+    ],
+
     title: 'Gestión de Usuarios',
-    store: { type: 'usersstore' },
+
+    store: {
+        type: 'users',
+        storeId: 'usersStoreId'
+    },
 
     plugins: [{
         ptype: 'rowexpander',
-        rowBodyTpl: [
-            '<div style="padding:10px;">',
-                '<p><b>Rol:</b> {rolNombre}</p>',
-                '<p><b>Dirección:</b> {direccion}</p>',
-                '<p><b>Ciudad:</b> {ciudad}</p>',
-                '<p><b>País:</b> {pais}</p>',
-                '<p><b>Cargo:</b> {cargo}</p>',
-                '<p><b>Estudios:</b> {nivelEstudios}</p>',
-            '</div>'
-        ]
+        rowBodyTpl: new Ext.XTemplate(
+            '<p><b>Dirección:</b> {direccion}</p>',
+            '<p><b>Ciudad:</b> {ciudad}</p>',
+            '<p><b>País:</b> {pais}</p>',
+            '<p><b>Cargo:</b> {cargo}</p>',
+            '<p><b>Nivel estudios:</b> {nivelEstudios}</p>',
+            '<p><b>Sexo:</b> {sexo}</p>'
+        )
     }],
 
     columns: [
-        { xtype: 'rownumberer' },
-        { text: 'ID', dataIndex: 'id', width: 60 },
-        { text: 'Nombres', dataIndex: 'nombres', flex: 1 },
-        { text: 'Apellidos', dataIndex: 'apellidos', flex: 1 },
-        { text: 'Email', dataIndex: 'email', flex: 1 },
+        { text: 'ID', dataIndex: 'id', width: 50 },
+        { text: 'Nombres', dataIndex: 'nombre', flex: 1 },
+        { text: 'Apellidos', dataIndex: 'apellido', flex: 1 },
+        { text: 'Email', dataIndex: 'email', flex: 1.5 },
         { text: 'Edad', dataIndex: 'edad', width: 80 },
 
-        // 🔥 NUEVA COLUMNA DE ROL
-        { text: 'Rol', dataIndex: 'rolNombre', flex: 1 },
+        {
+            text: 'Perfil',
+            dataIndex: 'perfilId',
+            width: 120,
+            renderer: function (value) {
+                const store = Ext.getStore('perfilesStoreId');
+                const rec = store ? store.getById(value) : null;
+                return rec ? rec.get('nombre') : value;
+            }
+        },
 
         {
             xtype: 'actioncolumn',
+            text: 'Acciones',
             width: 150,
             items: [
                 {
-                    iconCls: 'fa fa-edit',
-                    tooltip: 'Editar',
-                    handler: 'onEditUser'
+                    iconCls: 'x-fa fa-edit',
+                    tooltip: 'Editar usuario',
+                    handler: function(grid, rowIndex) {
+                        const rec = grid.getStore().getAt(rowIndex);
+                        const win = Ext.create('App.view.UserForm', {
+                            isEdit: true,
+                            userId: rec.get('id')
+                        });
+                        win.down('form').loadRecord(rec);
+                        win.show();
+                    }
                 },
                 {
-                    iconCls: 'fa fa-trash',
+                    iconCls: 'x-fa fa-building',
+                    tooltip: 'Gestionar centros',
+                    handler: function (grid, rowIndex) {
+                        const rec = grid.getStore().getAt(rowIndex);
+
+                        Ext.create('App.view.centros.CentrosWindow', {
+                            userRecord: rec
+                        }).show();
+                    }
+                },
+                {
+                    iconCls: 'x-fa fa-trash',
                     tooltip: 'Eliminar',
-                    handler: 'onDeleteUser'
+                    handler: function(grid, rowIndex) {
+                        const rec = grid.getStore().getAt(rowIndex);
+
+                        Ext.Msg.confirm('Confirmar',
+                            '¿Seguro que deseas eliminar este usuario?',
+                            function(choice) {
+                                if (choice === 'yes') {
+                                    Ext.Ajax.request({
+                                        url: 'http://localhost:8080/api/users/' + rec.get('id'),
+                                        method: 'DELETE',
+                                        success: function() {
+                                            grid.getStore().reload();
+                                        },
+                                        failure: function() {
+                                            Ext.Msg.alert('Error', 'No se pudo eliminar el usuario');
+                                        }
+                                    });
+                                }
+                            });
+                    }
                 }
             ]
         }
-    ],
+    ],  
 
     tbar: [
-        { text: 'Nuevo Usuario', iconCls: 'fa fa-plus', handler: 'onNewUser' }
-    ],
-
-    controller: {
-        onNewUser(grid) {
-            let win = Ext.create('FRONT_1.view.UserForm');
-            win.on('usersaved', () => grid.getStore().reload());
-            win.show();
-        },
-
-        onEditUser(grid, rowIndex, colIndex, item, e, record) {
-            let win = Ext.create('FRONT_1.view.UserForm', {
-                isEdit: true,
-                record: record
-            });
-            win.on('usersaved', () => grid.getStore().reload());
-            win.show();
-        },
-
-        onDeleteUser(grid, rowIndex, colIndex, item, e, record) {
-
-            // 🔥 VALIDACIÓN: NO eliminar si tiene rol asignado
-            if (record.get('rolId')) {
-                Ext.Msg.alert('No permitido', 
-                    `Este usuario tiene rol asignado: <b>${record.get('rolNombre')}</b><br>
-                     Primero reasígnalo antes de eliminar.`
-                );
-                return;
+        {
+            text: 'Nuevo usuario',
+            iconCls: 'x-fa fa-plus',
+            handler: function () {
+                Ext.create('App.view.UserForm', {
+                    isEdit: false
+                }).show();
             }
-
-            Ext.Msg.confirm('Confirmación',
-                '¿Seguro que desea eliminar este usuario?',
-                choice => {
-                    if (choice === 'yes') {
-                        Ext.Ajax.request({
-                            url: 'http://localhost:8080/api/users/' + record.get('id'),
-                            method: 'DELETE',
-                            success: () => grid.getStore().reload()
-                        });
-                    }
-                }
-            );
+        },
+        {
+            text: 'Recargar',
+            handler: function (btn) {
+                btn.up('grid').getStore().reload();
+            }
         }
-    }
+    ]
 });

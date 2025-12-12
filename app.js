@@ -11,27 +11,26 @@
 
 // Habilitar el modo de desarrollo para ver mensajes detallados en consola
 Ext.application({
-    name: 'FRONT_1',
+    name: 'App',
 
     requires: [
-        'FRONT_1.view.UsersGrid',
-        'FRONT_1.view.UserForm'
+        'App.view.UsersGrid',
+        'App.view.UserForm',
+        'App.view.perfil.PerfilGrid',
+        'App.view.MainView',
+        'App.store.PerfilesStore',
+        'App.view.centros.CentrosWindow'
+
     ],
 
     launch: function () {
-
-        console.log('%c🚀 Aplicación FRONT_1 iniciada', 'font-size:16px;color:#48c774;font-weight:bold;');
+        console.log('%c🚀 Aplicación App iniciada', 'font-size:16px;color:#48c774;font-weight:bold;');
 
         Ext.create('Ext.container.Viewport', {
             layout: 'fit',
-            padding: 10,
-
             items: [{
-                xtype: 'usersgrid',
-                reference: 'mainGrid'
+                xtype: 'mainview'
             }]
         });
-
-        console.log('📍 API REST: http://localhost:8080/api/users');
     }
 });

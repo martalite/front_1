@@ -1,159 +1,108 @@
-/**
- * FORMULARIO DE USUARIO
- * Crear / Editar usuarios con validaciones
- */
-
-Ext.define('FRONT_1.view.UserForm', {
+Ext.define('App.view.UserForm', {
     extend: 'Ext.window.Window',
-    alias: 'widget.userform',
+    xtype: 'userform',
 
     title: 'Usuario',
     modal: true,
-    width: 500,
+    width: 400,
     layout: 'fit',
 
-    isEdit: false,
-    record: null,
+    config: {
+        isEdit: false,
+        userId: null
+    },
 
-    initComponent: function () {
-        var me = this;
+    items: [{
+        xtype: 'form',
+        bodyPadding: 10,
+        defaults: {
+            anchor: '100%',
+            allowBlank: false
+        },
 
-        me.items = [{
-            xtype: 'form',
-            reference: 'userForm',
-            bodyPadding: 15,
-            defaults: {
-                xtype: 'textfield',
-                anchor: '100%',
+        items: [
+            { xtype: 'textfield', name: 'nombre', fieldLabel: 'Nombre' },
+            { xtype: 'textfield', name: 'apellido', fieldLabel: 'Apellido' },
+            { xtype: 'textfield', name: 'email', fieldLabel: 'Email', vtype: 'email' },
+            { xtype: 'numberfield', name: 'edad', fieldLabel: 'Edad', minValue: 1 },
+
+            {
+                xtype: 'combo',
+                fieldLabel: 'Perfil',
+                name: 'perfilId',
+
+                store: {
+                    type: 'perfiles',
+                    storeId: 'perfilesStoreId'
+                },
+
+                displayField: 'nombre',
+                valueField: 'id',
+                queryMode: 'local',
+
+                forceSelection: true,
+                editable: false,
                 allowBlank: false,
-                margin: '0 0 12 0'
-            },
+                emptyText: 'Seleccione un perfil...'
+            }
+        ],
 
-            items: [
-                {
-                    xtype: 'displayfield',
-                    fieldLabel: 'ID',
-                    name: 'id',
-                    hidden: !me.isEdit
-                },
-                { fieldLabel: 'Nombres', name: 'nombres' },
-                { fieldLabel: 'Apellidos', name: 'apellidos' },
-                { fieldLabel: 'Email', name: 'email', vtype: 'email' },
-                {
-                    fieldLabel: 'Edad',
-                    name: 'edad',
-                    xtype: 'numberfield',
-                    minValue: 1,
-                    maxValue: 120
-                },
-                { fieldLabel: 'Sexo', name: 'sexo', allowBlank: true },
-                { fieldLabel: 'Dirección', name: 'direccion', allowBlank: true },
-                { fieldLabel: 'Ciudad', name: 'ciudad', allowBlank: true },
-                { fieldLabel: 'País', name: 'pais', allowBlank: true },
-
-                // 🔥 COMBO DE ROL OBLIGATORIO
-                {
-                    xtype: 'combo',
-                    fieldLabel: 'Rol *',
-                    name: 'rolId',
-                    displayField: 'nombre',
-                    valueField: 'id',
-                    queryMode: 'local',
-                    forceSelection: true,
-                    allowBlank: false,
-                    blankText: 'Debe seleccionar un rol',
-                    store: {
-                        type: 'store',
-                        fields: ['id', 'nombre'],
-                        autoLoad: true,
-                        proxy: {
-                            type: 'ajax',
-                            url: 'http://localhost:8080/api/perfiles',
-                            reader: { type: 'json' }
-                        }
-                    }
-                }
-            ]
-        }];
-
-        me.buttons = [
-            { text: 'Cancelar', handler: () => me.close() },
+        buttons: [
             {
                 text: 'Guardar',
                 formBind: true,
-                handler: () => me.saveUser()
-            }
-        ];
+                handler: function(btn) {
+                    const win = btn.up('window');
+                    const form = win.down('form');
+                    const vals = form.getValues();
+                    const isEdit = win.getIsEdit();
+                    const userId = win.getUserId();
 
-        me.callParent(arguments);
+                    const method = isEdit ? 'PUT' : 'POST';
+                    const url = isEdit
+                        ? 'http://localhost:8080/api/users/' + userId
+                        : 'http://localhost:8080/api/users';
 
-        if (me.isEdit && me.record) {
-            me.down('form').getForm().loadRecord(me.record);
-        }
-    },
+                    Ext.Ajax.request({
+                        url: url,
+                        method: method,
+                        jsonData: vals,
 
-    saveUser: function () {
-        var me = this,
-            form = me.down('form').getForm();
+                        success: function() {
+                            Ext.Msg.alert('OK', 'Usuario guardado correctamente');
+                            win.close();
+                            Ext.getStore('usersStoreId').reload();
+                        },
 
-        if (!form.isValid()) {
-            Ext.Msg.alert('Error', 'Complete todos los campos obligatorios');
-            return;
-        }
-
-        var values = form.getValues();
-        values.rolNombre = me.down('combo[name=rolId]').getRawValue(); // guardamos el nombre del rol
-
-        me.setLoading(true);
-
-        if (me.isEdit) me.updateUser(values);
-        else me.createUser(values);
-    },
-
-    createUser: function (values) {
-        var me = this;
-
-        Ext.Ajax.request({
-            url: 'http://localhost:8080/api/users',
-            method: 'POST',
-            jsonData: values,
-
-            success: () => {
-                me.setLoading(false);
-                Ext.Msg.alert('Éxito', 'Usuario creado', () => {
-                    me.fireEvent('usersaved');
-                    me.close();
-                });
+                        failure: function(response) {
+                            Ext.Msg.alert('Error', response.responseText || 'Error al guardar');
+                        }
+                    });
+                }
             },
-            failure: () => {
-                me.setLoading(false);
-                Ext.Msg.alert('Error', 'No se pudo crear');
+            {
+                text: 'Cancelar',
+                handler: function(btn) {
+                    btn.up('window').close();
+                }
             }
-        });
-    },
+        ]
+    }],
 
-    updateUser: function (values) {
-        var me = this,
-            id = me.record.get('id');
+    listeners: {
+        show: function(win) {
 
-        values.id = id;
+            if (win.getIsEdit()) {
+                const form = win.down('form');
+                const rec = Ext.getStore('usersStoreId').getById(win.getUserId());
 
-        Ext.Ajax.request({
-            url: 'http://localhost:8080/api/users/' + id,
-            method: 'PUT',
-            jsonData: values,
+                if (rec) {
+                    form.loadRecord(rec);
 
-            success: () => {
-                me.setLoading(false);
-                Ext.Msg.alert('Éxito', 'Usuario actualizado', () => {
-                    me.fireEvent('usersaved');
-                    me.close();
-                });
-            },
-            failure: () => {
-                me.setLoading(false);
-                Ext.Msg.alert('Error', 'No se pudo actualizar');
+                    form.down('combo[name=perfilId]')
+                        .setValue(rec.get('perfilId'));
+                }
             }
-        });
+        }
     }
 });

@@ -9,15 +9,15 @@
  * - Cómo configurar el identificador único (idProperty)
  */
 
-Ext.define('FRONT_1.model.User', {
+Ext.define('App.model.User', {
     extend: 'Ext.data.Model',
 
-    idProperty: 'id',  // 
+    idProperty: 'id',
 
     fields: [
         { name: 'id', type: 'int' },
-        { name: 'nombres', type: 'string' },
-        { name: 'apellidos', type: 'string' },
+        { name: 'nombre', type: 'string' },
+        { name: 'apellido', type: 'string' },
         { name: 'edad', type: 'int' },
         { name: 'sexo', type: 'string' },
         { name: 'direccion', type: 'string' },
@@ -25,19 +25,7 @@ Ext.define('FRONT_1.model.User', {
         { name: 'pais', type: 'string' },
         { name: 'cargo', type: 'string' },
         { name: 'nivelEstudios', type: 'string' },
-        { name: 'email', type: 'string' }
-    ],
-
-    validators: {
-        nombres: { type: 'presence', message: 'El nombre es obligatorio' },
-        email: [
-            { type: 'presence', message: 'El email es obligatorio' },
-            { type: 'email', message: 'Email inválido' }
-        ],
-        edad: [
-            { type: 'presence', message: 'La edad es obligatoria' },
-            { type: 'range', min: 1, max: 120, message: 'Edad debe estar entre 1 y 120' }
-        ]
-    }
+        { name: 'email', type: 'string' },
+        { name: 'perfilId', type: 'int' }
+    ]
 });
-
