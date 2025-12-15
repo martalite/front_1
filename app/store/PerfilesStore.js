@@ -1,6 +1,8 @@
 Ext.define('App.store.PerfilesStore', {
     extend: 'Ext.data.Store',
+
     alias: 'store.perfiles',
+    storeId: 'perfilesStoreId',
 
     fields: ['id', 'nombre', 'descripcion'],
 

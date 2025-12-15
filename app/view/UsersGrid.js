@@ -3,17 +3,20 @@ Ext.define('App.view.UsersGrid', {
     xtype: 'usersgrid',
 
     requires: [
+        'App.store.UsersStore',
+        'Ext.grid.plugin.RowExpander',
         'App.view.UserForm',
-        'App.view.centros.CentrosWindow'  
+        'App.view.centros.CentrosWindow'
     ],
 
-    title: 'Gestión de Usuarios',
+    title: 'Usuarios',
 
+    // Store principal (alias: store.users)
     store: {
-        type: 'users',
-        storeId: 'usersStoreId'
+        type: 'users'
     },
 
+    // 🔽 RowExpander (detalles del usuario)
     plugins: [{
         ptype: 'rowexpander',
         rowBodyTpl: new Ext.XTemplate(
@@ -27,23 +30,28 @@ Ext.define('App.view.UsersGrid', {
     }],
 
     columns: [
-        { text: 'ID', dataIndex: 'id', width: 50 },
-        { text: 'Nombres', dataIndex: 'nombre', flex: 1 },
-        { text: 'Apellidos', dataIndex: 'apellido', flex: 1 },
+        { text: 'ID', dataIndex: 'id', width: 60 },
+        { text: 'Nombre', dataIndex: 'nombre', flex: 1 },
+        { text: 'Apellido', dataIndex: 'apellido', flex: 1 },
         { text: 'Email', dataIndex: 'email', flex: 1.5 },
         { text: 'Edad', dataIndex: 'edad', width: 80 },
 
+        // 🧩 Perfil (renderer SEGURO)
         {
             text: 'Perfil',
             dataIndex: 'perfilId',
-            width: 120,
+            width: 140,
             renderer: function (value) {
-                const store = Ext.getStore('perfilesStoreId');
-                const rec = store ? store.getById(value) : null;
+                var store = Ext.getStore('perfilesStoreId');
+                if (!store) {
+                    return value;
+                }
+                var rec = store.getById(value);
                 return rec ? rec.get('nombre') : value;
             }
         },
 
+        // ⚙️ Acciones
         {
             xtype: 'actioncolumn',
             text: 'Acciones',
@@ -52,21 +60,20 @@ Ext.define('App.view.UsersGrid', {
                 {
                     iconCls: 'x-fa fa-edit',
                     tooltip: 'Editar usuario',
-                    handler: function(grid, rowIndex) {
-                        const rec = grid.getStore().getAt(rowIndex);
-                        const win = Ext.create('App.view.UserForm', {
+                    handler: function (grid, rowIndex) {
+                        var rec = grid.getStore().getAt(rowIndex);
+
+                        Ext.create('App.view.UserForm', {
                             isEdit: true,
                             userId: rec.get('id')
-                        });
-                        win.down('form').loadRecord(rec);
-                        win.show();
+                        }).show();
                     }
                 },
                 {
                     iconCls: 'x-fa fa-building',
                     tooltip: 'Gestionar centros',
                     handler: function (grid, rowIndex) {
-                        const rec = grid.getStore().getAt(rowIndex);
+                        var rec = grid.getStore().getAt(rowIndex);
 
                         Ext.create('App.view.centros.CentrosWindow', {
                             userRecord: rec
@@ -75,32 +82,35 @@ Ext.define('App.view.UsersGrid', {
                 },
                 {
                     iconCls: 'x-fa fa-trash',
-                    tooltip: 'Eliminar',
-                    handler: function(grid, rowIndex) {
-                        const rec = grid.getStore().getAt(rowIndex);
+                    tooltip: 'Eliminar usuario',
+                    handler: function (grid, rowIndex) {
+                        var rec = grid.getStore().getAt(rowIndex);
 
-                        Ext.Msg.confirm('Confirmar',
+                        Ext.Msg.confirm(
+                            'Confirmar eliminación',
                             '¿Seguro que deseas eliminar este usuario?',
-                            function(choice) {
+                            function (choice) {
                                 if (choice === 'yes') {
                                     Ext.Ajax.request({
                                         url: 'http://localhost:8080/api/users/' + rec.get('id'),
                                         method: 'DELETE',
-                                        success: function() {
+                                        success: function () {
                                             grid.getStore().reload();
                                         },
-                                        failure: function() {
+                                        failure: function () {
                                             Ext.Msg.alert('Error', 'No se pudo eliminar el usuario');
                                         }
                                     });
                                 }
-                            });
+                            }
+                        );
                     }
                 }
             ]
         }
-    ],  
+    ],
 
+    // 🔝 Barra superior
     tbar: [
         {
             text: 'Nuevo usuario',
