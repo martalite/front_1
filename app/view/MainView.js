@@ -4,7 +4,8 @@ Ext.define('App.view.MainView', {
 
     requires: [
         'App.view.UsersGrid',
-        'App.view.perfil.PerfilGrid'
+        'App.view.perfil.PerfilGrid',
+        'App.view.pacientes.PacientesGrid'
     ],
 
     layout: 'border',
@@ -44,7 +45,17 @@ Ext.define('App.view.MainView', {
                         panel.removeAll();
                         panel.add({ xtype: 'perfilgrid' });
                     }
-                }
+                },
+                
+                {
+                    text: 'Pacientes',
+                    iconCls: 'x-fa fa-hospital-user',
+                    handler: function () {
+                        var panel = Ext.getCmp('main-content');
+                        panel.removeAll();
+                        panel.add({ xtype: 'pacientesgrid' });
+                    }
+                }    
             ]
         },
 
@@ -55,7 +66,11 @@ Ext.define('App.view.MainView', {
             id: 'main-content',
             layout: 'fit',
             bodyPadding: 10,
-            html: '<h2>Bienvenido</h2><p>Selecciona una opción del menú.</p>'
+            items: [
+                {
+                    xtype: 'pacientesgrid'
+                }
+            ]
         }
     ]
 });

@@ -1,25 +1,29 @@
-Ext.Loader.setConfig({
-    enabled: true,
-    paths: {
-        App: 'app'
-    }
-});
-
 Ext.application({
     name: 'App',
 
     requires: [
         'App.view.login.Login',
-        'App.view.MainView'
+        'App.view.MainView',
+        'App.store.PacientesStore',
+        'App.store.PerfilesStore',
+        'App.store.UsersStore'
     ],
 
     launch: function () {
 
-    //  Login
-    Ext.create('App.view.login.Login');
+        // Login
+        Ext.create('App.view.login.Login');
 
-    //  crear store de perfiles
-    Ext.create('App.store.PerfilesStore');
-}
+        // 🔥 STORES GLOBALES
+        Ext.create('App.store.PacientesStore');
+        Ext.create('App.store.PerfilesStore');
+        Ext.create('App.store.UsersStore');
+        Ext.create('App.store.CentroStore');
+        Ext.create('App.store.PacientesStore');
+        Ext.create('App.store.ModalidadesStore');
 
+
+    }
 });
+
+
